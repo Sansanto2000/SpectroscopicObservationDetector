@@ -1,0 +1,15 @@
+[project]
+name = "spectroscopicobservationdetector"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "keras-cv",
+    "matplotlib==3.10.8",
+    "opencv-python==4.13.0.92",
+    "tensorflow==2.20.0",
+]
+
+[tool.uv.sources]
+keras-cv = { git = "https://github.com/keras-team/keras-cv", rev = "94b0a551d03ee9de3d81663e2c1a680cb113f7f1" }
