@@ -6,7 +6,7 @@ El repositorio contine el codigo necesario para entrenar y ejecutar el modelo de
 
 # Entorno virtual
 
-Se recomienda usar un entorno virtual para manejar las dependencias del codigo.
+Se recomienda usar un entorno virtual para manejar las dependencias del codigo ().
 
 🔨 Crear entorno virtual `.\venv`:
 ```
@@ -31,8 +31,9 @@ pip install -r requirements.txt
 
 # Entrenamiento
 
-...
+Con el siguiente comando se puede iniciar el entrenamiento del modelo.
+```
+python main.py
+```
 
-# Ejecucion
 
-...

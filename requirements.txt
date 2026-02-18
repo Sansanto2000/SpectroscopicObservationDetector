@@ -1,2 +1,4 @@
-# Keras-cv para YOLOv8 en Tensorflow
-keras-cv @ git+https://github.com/keras-team/keras-cv@94b0a551d03ee9de3d81663e2c1a680cb113f7f1
+keras-cv @ git+https://github.com/keras-team/keras-cv@94b0a551d03ee9de3d81663e2c1a680cb113f7f1  # Keras-cv para YOLOv8 en Tensorflow
+tensorflow==2.20.0
+matplotlib==3.10.8
+opencv-python==4.13.0.92
