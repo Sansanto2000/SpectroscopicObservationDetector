@@ -45,7 +45,8 @@ def visualize_dataset(
         plt.close()
 
 def visualize_detections(model, dataset, bounding_box_format,
-                         rows, cols, class_mapping, save_path=None):
+                         rows, cols, class_mapping, save_path=None,
+                         confidence_threshold=None):
     """Visualiza las detecciones realizadas por un modelo.
 
     Args:
@@ -60,14 +61,8 @@ def visualize_detections(model, dataset, bounding_box_format,
     """
     images, y_true = next(iter(dataset.take(1)))
     y_pred = model.predict(images)
-    tf.print(
-        "_____________\n",
-        'y_pred',type(y_pred), y_pred.shape()
-        "\n_____________\n",
-        'y_true',type(y_true), y_true.shape()
-        "\n_____________",
-    )
-    y_pred = bounding_box.to_ragged(y_pred)
+    if(confidence_threshold != None):
+        y_pred = filter_predictions(y_pred, confidence_threshold)
 
     visualization.plot_bounding_box_gallery(
         images,
@@ -78,7 +73,7 @@ def visualize_detections(model, dataset, bounding_box_format,
         scale=4,
         rows=rows,
         cols=cols,
-        show=True,
+        show=False,
         font_scale=0.7,
         class_mapping=class_mapping,
     )
@@ -86,3 +81,14 @@ def visualize_detections(model, dataset, bounding_box_format,
     if save_path:
         plt.savefig(save_path, bbox_inches="tight")
         plt.close()
+
+
+def filter_predictions(y_pred, threshold=0.5):
+    mask = y_pred["confidence"] >= threshold
+
+    filtered = {
+        "boxes": tf.ragged.boolean_mask(y_pred["boxes"], mask),
+        "classes": tf.ragged.boolean_mask(y_pred["classes"], mask),
+        "confidence": tf.ragged.boolean_mask(y_pred["confidence"], mask),
+    }
+    return filtered

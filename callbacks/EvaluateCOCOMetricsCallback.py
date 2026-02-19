@@ -14,7 +14,7 @@ class EvaluateCOCOMetricsCallback(Callback):
         super().__init__()
         self.data = data
         self.metrics = keras_cv.metrics.BoxCOCOMetrics(
-            bounding_box_format="rel_xywh",
+            bounding_box_format="xywh",
             evaluate_freq=1e9,
         )
 
@@ -25,13 +25,23 @@ class EvaluateCOCOMetricsCallback(Callback):
         self.metrics.reset_state()
         for images, y_true in self.data:
             y_pred = self.model.predict(images, verbose=0)
-            tf.print(
-                "_____________\n",
-                y_pred,
-                "\n_____________",
+
+            # Convertir piso de verdad a absoluto
+            y_true = keras_cv.bounding_box.convert_format(
                 y_true,
-                "\n_____________",
+                source="rel_xywh",
+                target="xywh",
+                images=images,
             )
+
+            # Convertir predicciones a absoluto
+            y_pred = keras_cv.bounding_box.convert_format(
+                y_pred,
+                source="rel_xywh",
+                target="xywh",
+                images=images,
+            )
+            
             self.metrics.update_state(y_true, y_pred)
 
         metrics = self.metrics.result(force=True)

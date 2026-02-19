@@ -1,11 +1,12 @@
 import os
 #os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes
 from tqdm.auto import tqdm
-from callbacks.EvaluateCOCOMetricsCallback import EvaluateCOCOMetricsCallback
 from utils.loadFiles import load_dataset, txt_to_annotation
 
 import tensorflow as tf
 from keras.optimizers import Adam
+from keras.callbacks import TensorBoard
+from callbacks.EvaluateCOCOMetricsCallback import EvaluateCOCOMetricsCallback
 
 from utils.parse import center_rel_xywh_to_rel_xywh
 from utils.resize import resize_rel_center_xywh
@@ -17,18 +18,9 @@ import keras_cv
 SPLIT_RATIO = 0.2
 BATCH_SIZE = 4
 LEARNING_RATE = 0.001
-EPOCH = 1
+EPOCH = 2
 GLOBAL_CLIPNORM = 10.0
 SAVE_PATH = 'models/model.keras'
-
-# Archivos a ignorar
-exclude = [
-    'D:\Datasets\conGSSSP\images\157.jpg',
-    'D:\Datasets\conGSSSP\images\17.jpg',
-    'D:\Datasets\conGSSSP\images\183.jpg',
-    'D:\Datasets\conGSSSP\images\223.jpg',
-    'D:\Datasets\conGSSSP\images\23.jpg'
-]
 
 class_ids = [
     "observation"
@@ -151,14 +143,19 @@ yolo.compile(
 )
 
 callbacks = [
-    EvaluateCOCOMetricsCallback(val_ds, SAVE_PATH)
+    EvaluateCOCOMetricsCallback(val_ds, SAVE_PATH),
+    TensorBoard(
+        log_dir='tensorboard/logdir', 
+        histogram_freq=1,   # Frecuencia (en epocas) para generar histogramas
+        update_freq="epoch",
+    )
 ]
 
 # Entrenar
 yolo.fit(
     train_ds,
     validation_data=val_ds,
-    #callbacks=callbacks,
+    callbacks=callbacks,
     epochs=EPOCH
 )
 
@@ -170,7 +167,8 @@ visualize_detections(
     dataset=train_ds, 
     bounding_box_format="rel_xywh",
     rows=2, cols=2, class_mapping=class_mapping, 
-    save_path="train_predictions.png"
+    save_path="train_predictions.png",
+    confidence_threshold=0.7
 )
 # Validacion
 visualize_detections(
@@ -178,5 +176,6 @@ visualize_detections(
     dataset=val_ds, 
     bounding_box_format="rel_xywh",
     rows=2, cols=2, class_mapping=class_mapping, 
-    save_path="val_predictions.png"
+    save_path="val_predictions.png",
+    confidence_threshold=0.7
 )
