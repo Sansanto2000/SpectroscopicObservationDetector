@@ -1,5 +1,6 @@
 from keras.callbacks import Callback
 import keras_cv
+import tensorflow as tf
 
 class EvaluateCOCOMetricsCallback(Callback):
     """
@@ -22,9 +23,15 @@ class EvaluateCOCOMetricsCallback(Callback):
 
     def on_epoch_end(self, epoch, logs):
         self.metrics.reset_state()
-        for batch in self.data:
-            images, y_true = batch[0], batch[1]
+        for images, y_true in self.data:
             y_pred = self.model.predict(images, verbose=0)
+            tf.print(
+                "_____________\n",
+                y_pred,
+                "\n_____________",
+                y_true,
+                "\n_____________",
+            )
             self.metrics.update_state(y_true, y_pred)
 
         metrics = self.metrics.result(force=True)
@@ -37,5 +44,3 @@ class EvaluateCOCOMetricsCallback(Callback):
             self.model.save(self.save_path)  
 
         return logs
-
-

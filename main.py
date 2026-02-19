@@ -4,25 +4,31 @@ from tqdm.auto import tqdm
 from callbacks.EvaluateCOCOMetricsCallback import EvaluateCOCOMetricsCallback
 from utils.loadFiles import load_dataset, txt_to_annotation
 
-
 import tensorflow as tf
 from keras.optimizers import Adam
 
 from utils.parse import center_rel_xywh_to_rel_xywh
 from utils.resize import resize_rel_center_xywh
-from utils.visualize import visualize_dataset
+from utils.visualize import visualize_dataset, visualize_detections
 
 import keras_cv
-# from keras_cv import bounding_box
-# from keras_cv import visualization
 
 
 SPLIT_RATIO = 0.2
 BATCH_SIZE = 4
 LEARNING_RATE = 0.001
-EPOCH = 5
+EPOCH = 1
 GLOBAL_CLIPNORM = 10.0
 SAVE_PATH = 'models/model.keras'
+
+# Archivos a ignorar
+exclude = [
+    'D:\Datasets\conGSSSP\images\157.jpg',
+    'D:\Datasets\conGSSSP\images\17.jpg',
+    'D:\Datasets\conGSSSP\images\183.jpg',
+    'D:\Datasets\conGSSSP\images\223.jpg',
+    'D:\Datasets\conGSSSP\images\23.jpg'
+]
 
 class_ids = [
     "observation"
@@ -30,8 +36,8 @@ class_ids = [
 class_mapping = dict(zip(range(len(class_ids)), class_ids))
 
 # Ubicacion de las imagenes y anotaciones
-path_images = "/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP\\images\\"
-path_annot = "/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP\\labels\\"
+path_images = "D:\\Datasets\\conGSSSP_v2\\images\\" # "/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/"
+path_annot = "D:\\Datasets\\conGSSSP_v2\\labels\\" # "/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" 
 
 # Recuperar archivos TXT de etiquetas ordenados
 txt_files = sorted(
@@ -66,21 +72,10 @@ for txt_file in tqdm(txt_files):
     bbox.append(boxes)
     classes.append(class_ids)
 
-# Manejo de casos vacios
-processed_boxes = []
-for b in bbox:
-    if len(b) == 0:
-        processed_boxes.append(tf.zeros((0, 4), dtype=tf.float32))
-    else:
-        processed_boxes.append(tf.convert_to_tensor(b, dtype=tf.float32))
-
 
 # Cajas, Clases y Caminos de imagenes mejor como tensores
-bbox = tf.ragged.constant(processed_boxes)
-print('___________')
-print(bbox.shape)
+bbox = tf.ragged.constant(bbox, ragged_rank=1, inner_shape=(4,))
 classes = tf.ragged.constant(classes)
-print(bbox.shape)
 image_paths = tf.ragged.constant(image_paths)
 
 # Dataset final
@@ -155,10 +150,33 @@ yolo.compile(
     box_loss='ciou'
 )
 
+callbacks = [
+    EvaluateCOCOMetricsCallback(val_ds, SAVE_PATH)
+]
+
 # Entrenar
 yolo.fit(
     train_ds,
     validation_data=val_ds,
-    callbacks=[EvaluateCOCOMetricsCallback(val_ds, SAVE_PATH)],
+    #callbacks=callbacks,
     epochs=EPOCH
+)
+
+
+### Visualizar predicciones ###
+# Entrenamiento
+visualize_detections(
+    yolo, 
+    dataset=train_ds, 
+    bounding_box_format="rel_xywh",
+    rows=2, cols=2, class_mapping=class_mapping, 
+    save_path="train_predictions.png"
+)
+# Validacion
+visualize_detections(
+    yolo, 
+    dataset=val_ds, 
+    bounding_box_format="rel_xywh",
+    rows=2, cols=2, class_mapping=class_mapping, 
+    save_path="val_predictions.png"
 )

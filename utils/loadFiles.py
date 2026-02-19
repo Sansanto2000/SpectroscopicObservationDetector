@@ -23,7 +23,6 @@ def txt_to_annotation(txt_file):
     with open(txt_file, "r") as f:
         lines = f.readlines()
 
-
     for line in lines:
         parts = line.strip().split()
         class_id = int(parts[0])
