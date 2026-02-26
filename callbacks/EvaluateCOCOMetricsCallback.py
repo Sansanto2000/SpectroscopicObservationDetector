@@ -2,6 +2,8 @@ from keras.callbacks import Callback
 import keras_cv
 import tensorflow as tf
 
+from utils.parse import to_ragged_predictions
+
 class EvaluateCOCOMetricsCallback(Callback):
     """
     Docstring para EvaluateCOCOMetricsCallback
@@ -25,6 +27,7 @@ class EvaluateCOCOMetricsCallback(Callback):
         self.metrics.reset_state()
         for images, y_true in self.data:
             y_pred = self.model.predict(images, verbose=0)
+            y_pred = to_ragged_predictions(y_pred)
 
             # Convertir piso de verdad a absoluto
             y_true = keras_cv.bounding_box.convert_format(
@@ -41,10 +44,12 @@ class EvaluateCOCOMetricsCallback(Callback):
                 target="xywh",
                 images=images,
             )
+            #y_pred =  tf.RaggedTensor.from_tensor() tf.ragged.constant(y_pred)
             
             self.metrics.update_state(y_true, y_pred)
 
         metrics = self.metrics.result(force=True)
+        print(metrics)
         logs.update(metrics)
 
         # Si MaP mejora guarda el modelo

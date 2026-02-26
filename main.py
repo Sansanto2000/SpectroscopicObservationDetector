@@ -1,7 +1,7 @@
 import os
-#os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes de advertencia 
 from tqdm.auto import tqdm
-from utils.loadFiles import load_dataset, txt_to_annotation
+from utils.loadFiles import load_dataset, load_yolo_dataset, txt_to_annotation
 
 import tensorflow as tf
 from keras.optimizers import Adam
@@ -18,66 +18,21 @@ import keras_cv
 SPLIT_RATIO = 0.2
 BATCH_SIZE = 4
 LEARNING_RATE = 0.001
-EPOCH = 2
+EPOCH = 3
 GLOBAL_CLIPNORM = 10.0
 SAVE_PATH = 'models/model.keras'
+# Ubicacion de las imagenes y anotaciones
+PATH_IMAGES = "/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
+PATH_ANNOT = "/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
 
+# Etiquetas de clase
 class_ids = [
     "observation"
 ]
 class_mapping = dict(zip(range(len(class_ids)), class_ids))
 
-# Ubicacion de las imagenes y anotaciones
-path_images = "D:\\Datasets\\conGSSSP_v2\\images\\" # "/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/"
-path_annot = "D:\\Datasets\\conGSSSP_v2\\labels\\" # "/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" 
-
-# Recuperar archivos TXT de etiquetas ordenados
-txt_files = sorted(
-    [
-        os.path.join(path_annot, file_name)
-        for file_name in os.listdir(path_annot)
-        if file_name.endswith(".txt")
-    ]
-)
-
-# Recuperar archivos JPG de imagenes ordenados
-jpg_files = sorted(
-    [
-        os.path.join(path_images, file_name)
-        for file_name in os.listdir(path_images)
-        if file_name.endswith(".jpg")
-    ]
-)
-
-# Etiquetas: Aislar informacion de clases y cajas delimitadoras 
-image_paths = []
-bbox = []
-classes = []
-for txt_file in tqdm(txt_files):
-    # Nombre del archivo de imagen correspondiente
-    image_name = os.path.splitext(os.path.basename(txt_file))[0] + ".jpg"
-    image_path = os.path.join(path_images, image_name)
-    # Clase y cajas delimitadoras
-    boxes, class_ids = txt_to_annotation(txt_file)
-    # Agregar en listas
-    image_paths.append(image_path)
-    bbox.append(boxes)
-    classes.append(class_ids)
-
-
-# Cajas, Clases y Caminos de imagenes mejor como tensores
-bbox = tf.ragged.constant(bbox, ragged_rank=1, inner_shape=(4,))
-classes = tf.ragged.constant(classes)
-image_paths = tf.ragged.constant(image_paths)
-
-# Dataset final
-data = tf.data.Dataset.from_tensor_slices((image_paths, classes, bbox))
-
-# Dividir conjunto de validacion y de test
-num_val = int(len(txt_files) * SPLIT_RATIO)
-val_data = data.take(num_val)
-train_data = data.skip(num_val)
-
+# Cargar dataset
+train_data, val_data = load_yolo_dataset(PATH_IMAGES, PATH_ANNOT, SPLIT_RATIO)
 
 # Preparar datos de entrenamiento
 train_ds = train_data.map(load_dataset, num_parallel_calls=tf.data.AUTOTUNE)
@@ -98,13 +53,13 @@ val_ds = val_ds.ragged_batch(BATCH_SIZE, drop_remainder=True)
 # Visualizar
 visualize_dataset(
     train_ds, bounding_box_format="rel_xywh", value_range=(0, 255), 
-    rows=2, cols=2, class_mapping=class_mapping, save_path="train_visualization.png"
+    rows=2, cols=2, class_mapping=class_mapping, save_path="train/train_visualization.png"
 )
 
 # Visualizar
 visualize_dataset(
     val_ds, bounding_box_format="rel_xywh", value_range=(0, 255), 
-    rows=2, cols=2, class_mapping=class_mapping, save_path="val_visualization.png"
+    rows=2, cols=2, class_mapping=class_mapping, save_path="train/val_visualization.png"
 )
 
 ### Tuplas para el entrenamiento ###
@@ -129,6 +84,12 @@ yolo = keras_cv.models.YOLOV8Detector(
     bounding_box_format="rel_xywh",
     backbone=backbone,
     fpn_depth=1,
+    # prediction_decoder=keras_cv.layers.MultiClassNonMaxSuppression(
+    #     bounding_box_format="rel_xywh",
+    #     from_logits=False,
+    #     confidence_threshold=0.5,
+    #     iou_threshold=0.5,
+    # ),
 )
 # Optimizador 
 optimizer = Adam(
@@ -167,8 +128,8 @@ visualize_detections(
     dataset=train_ds, 
     bounding_box_format="rel_xywh",
     rows=2, cols=2, class_mapping=class_mapping, 
-    save_path="train_predictions.png",
-    confidence_threshold=0.7
+    save_path="train/train_predictions.png",
+    confidence_threshold=0.5
 )
 # Validacion
 visualize_detections(
@@ -176,6 +137,6 @@ visualize_detections(
     dataset=val_ds, 
     bounding_box_format="rel_xywh",
     rows=2, cols=2, class_mapping=class_mapping, 
-    save_path="val_predictions.png",
-    confidence_threshold=0.7
+    save_path="train/val_predictions.png",
+    confidence_threshold=0.5
 )

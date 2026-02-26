@@ -6,34 +6,20 @@ El repositorio contine el codigo necesario para entrenar y ejecutar el modelo de
 
 # Entorno virtual
 
-Se recomienda usar un entorno virtual para manejar las dependencias del codigo ().
-
-🔨 Crear entorno virtual `.\venv`:
-```
-python -m venv venv
-``` 
-
-🚀 Activar entorno virtual `.\venv`:
-```
-# Windows
-.\venv\Scripts\Activate.ps1
-
-# Mac
-source venv/bin/activate
-```
-
-# Dependencias
-
-📦 Instala las dependencias necesarias con:
-```
-pip install -r requirements.txt
-```
+Se recomienda usar uv para la administracion del entorno virtual.
 
 # Entrenamiento
 
 Con el siguiente comando se puede iniciar el entrenamiento del modelo.
 ```
-python main.py
+uv python main.py
+```
+
+## Tensorboard
+
+Las metricas de ejecucion se pueden ver con el siguiente comando.
+```
+uv run tensorboard --logdir="tensorboard/logdir"
 ```
 
 
