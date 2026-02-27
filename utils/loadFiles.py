@@ -48,7 +48,11 @@ def load_yolo_dataset(path_images:str, path_annot:str, SPLIT_RATIO:float) -> tup
         image_name = os.path.splitext(os.path.basename(txt_file))[0] + ".jpg"
         image_path = os.path.join(path_images, image_name)
         # Clase y cajas delimitadoras
-        boxes, class_ids = txt_to_annotation(txt_file)
+        try:
+            boxes, class_ids = txt_to_annotation(txt_file)
+        except Exception as e:
+            print(f"Error en archivo: {txt_file}")
+            raise e
         # Agregar en listas
         image_paths.append(image_path)
         bbox.append(boxes)
@@ -88,7 +92,13 @@ def txt_to_annotation(txt_file):
         lines = f.readlines()
 
     for line in lines:
+
         parts = line.strip().split()
+
+        # Saltear lineas vacias
+        if len(parts) == 0:
+            continue
+        # Separar valores
         class_id = int(parts[0])
         x_center = float(parts[1])
         y_center = float(parts[2])
@@ -102,8 +112,7 @@ def txt_to_annotation(txt_file):
 
 
 def load_image(image_path):
-    """_summary_
-    Cargar imagen como tensor.
+    """Cargar imagen como tensor.
 
     Args:
     - image_path:string - Path de la imagen.

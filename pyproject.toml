@@ -3,12 +3,12 @@ name = "spectroscopicobservationdetector"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.10,<3.13"
 dependencies = [
     "keras-cv",
     "matplotlib==3.10.8",
-    "opencv-python==4.13.0.92",
-    "tensorflow==2.20.0",
+    "opencv-python==4.8.1.78",
+    "tensorflow[and-cuda]==2.16.1",
     "pycocotools==2.0.11",
     "setuptools==80.9.0",
 ]

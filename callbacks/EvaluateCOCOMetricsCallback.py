@@ -49,7 +49,6 @@ class EvaluateCOCOMetricsCallback(Callback):
             self.metrics.update_state(y_true, y_pred)
 
         metrics = self.metrics.result(force=True)
-        print(metrics)
         logs.update(metrics)
 
         # Si MaP mejora guarda el modelo

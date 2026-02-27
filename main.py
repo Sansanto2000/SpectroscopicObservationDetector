@@ -1,19 +1,19 @@
 import os
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes de advertencia 
-from tqdm.auto import tqdm
-from utils.loadFiles import load_dataset, load_yolo_dataset, txt_to_annotation
+
+from utils.prepare import prepare_ds
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes de advertencia
+from utils.loadFiles import load_yolo_dataset
 
 import tensorflow as tf
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
 from callbacks.EvaluateCOCOMetricsCallback import EvaluateCOCOMetricsCallback
-
-from utils.parse import center_rel_xywh_to_rel_xywh
-from utils.resize import resize_rel_center_xywh
 from utils.visualize import visualize_dataset, visualize_detections
 
 import keras_cv
 
+tf.config.optimizer.set_jit(False)
+tf.keras.backend.clear_session()
 
 SPLIT_RATIO = 0.2
 BATCH_SIZE = 4
@@ -22,8 +22,8 @@ EPOCH = 3
 GLOBAL_CLIPNORM = 10.0
 SAVE_PATH = 'models/model.keras'
 # Ubicacion de las imagenes y anotaciones
-PATH_IMAGES = "/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
-PATH_ANNOT = "/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
+PATH_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large/images"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
+PATH_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large/labels" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
 
 # Etiquetas de clase
 class_ids = [
@@ -34,21 +34,15 @@ class_mapping = dict(zip(range(len(class_ids)), class_ids))
 # Cargar dataset
 train_data, val_data = load_yolo_dataset(PATH_IMAGES, PATH_ANNOT, SPLIT_RATIO)
 
+### REGLAS DE LOS DATOS ###
+"""
+IMAGENES: (640, 640)
+LABELS: rel_xywh
+"""
 # Preparar datos de entrenamiento
-train_ds = train_data.map(load_dataset, num_parallel_calls=tf.data.AUTOTUNE)
-train_ds = train_ds.shuffle(BATCH_SIZE * 4)
-train_ds = train_ds.map(resize_rel_center_xywh, num_parallel_calls=tf.data.AUTOTUNE)
-train_ds = train_ds.map(center_rel_xywh_to_rel_xywh, num_parallel_calls=tf.data.AUTOTUNE)
-train_ds = train_ds.ragged_batch(BATCH_SIZE, drop_remainder=True)
-
+train_ds = prepare_ds(train_data, (640,640), BATCH_SIZE)
 # Preparar datos de validacion
-val_ds = val_data.map(load_dataset, num_parallel_calls=tf.data.AUTOTUNE)
-val_ds = val_ds.shuffle(BATCH_SIZE * 4)
-val_ds = val_ds.map(resize_rel_center_xywh, num_parallel_calls=tf.data.AUTOTUNE)
-val_ds = val_ds.map(center_rel_xywh_to_rel_xywh, num_parallel_calls=tf.data.AUTOTUNE)
-val_ds = val_ds.ragged_batch(BATCH_SIZE, drop_remainder=True)
-
-
+val_ds = prepare_ds(val_data, (640,640), BATCH_SIZE)
 
 # Visualizar
 visualize_dataset(
@@ -100,7 +94,8 @@ optimizer = Adam(
 yolo.compile(
     optimizer=optimizer,
     classification_loss="binary_crossentropy",
-    box_loss='ciou'
+    box_loss='ciou',
+    jit_compile=False
 )
 
 callbacks = [
