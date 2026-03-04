@@ -18,7 +18,7 @@ tf.keras.backend.clear_session()
 SPLIT_RATIO = 0.2
 BATCH_SIZE = 4
 LEARNING_RATE = 0.001
-EPOCH = 3
+EPOCH = 100
 GLOBAL_CLIPNORM = 10.0
 SAVE_PATH = 'models/model.keras'
 # Ubicacion de las imagenes y anotaciones

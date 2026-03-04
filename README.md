@@ -14,7 +14,7 @@ Con el siguiente comando se puede iniciar el entrenamiento del modelo.
 ```
 uv run main.py
 # o
-nohup uv run train.py > output.log 2>&1 &
+nohup uv run main.py > output.log 2>&1 &
 ```
 
 Con el siguiente comando se puede reanudar el entrenamiento de un modelo que ya estubiese entrenando.

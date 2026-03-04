@@ -1,8 +1,8 @@
 import os
+from gsssp.generators.spectrumLabeledSequence import SpectrumLabeledSequence
 import tensorflow as tf
 
-image_dir ="/mnt/data3/sponte/datasets/conGSSSP.large/images"
-
+image_dir ="/mnt/data3/sponte/datasets/conGSSSP.test/images"
 
 cant = 0
 for root, _, files in os.walk(image_dir):

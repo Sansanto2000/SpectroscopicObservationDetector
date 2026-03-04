@@ -7,6 +7,7 @@ from utils.prepare import prepare_ds
 import tensorflow as tf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes de advertencia
 
+MODEL_PATH = '/home/sponte/Repositorios/SpectroscopicObservationDetector/models/model.keras'
 TEST_IMAGES = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/images.jpg"
 TEST_ANNOT = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/labels"
 BATCH_SIZE = 4
@@ -40,10 +41,7 @@ test_ds = test_ds.map(dict_to_tuple, num_parallel_calls=tf.data.AUTOTUNE)
 test_ds = test_ds.prefetch(tf.data.AUTOTUNE)
 
 ### Modelo ###
-model = tf.keras.models.load_model(
-    '/home/sponte/Repositorios/SpectroscopicObservationDetector/models/model.keras',
-    compile=False
-)
+model = tf.keras.models.load_model(MODEL_PATH, compile=False)
 
 ### Metricas ###
 metrics = keras_cv.metrics.BoxCOCOMetrics(

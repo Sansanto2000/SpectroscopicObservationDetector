@@ -10,11 +10,11 @@ tf.config.optimizer.set_jit(False)
 tf.keras.backend.clear_session()
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes de advertencia
 
-PATH_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large/images"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
-PATH_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large/labels" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
+PATH_IMAGES = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/images.jpg" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
+PATH_ANNOT = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/labels" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
 BATCH_SIZE = 4
 SPLIT_RATIO = 0.2
-EPOCH = 10
+EPOCH = 40
 SAVE_PATH = '/home/sponte/Repositorios/SpectroscopicObservationDetector/models/model.keras'
 LEARNING_RATE = 0.001
 GLOBAL_CLIPNORM = 10.0
@@ -47,8 +47,8 @@ model.compile(
 train_data, val_data = load_yolo_dataset(PATH_IMAGES, PATH_ANNOT, SPLIT_RATIO)
 
 # Preparar datos de entrenamiento
-train_ds = prepare_ds(train_data, (640,640), BATCH_SIZE)
-val_ds = prepare_ds(val_data, (640,640), BATCH_SIZE)
+train_ds = prepare_ds(train_data, (640,640), BATCH_SIZE, rotate_angle=90)
+val_ds = prepare_ds(val_data, (640,640), BATCH_SIZE, rotate_angle=90)
 
 ### Tuplas para el entrenamiento ###
 # Funcion
