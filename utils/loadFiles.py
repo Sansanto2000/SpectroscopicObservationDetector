@@ -66,6 +66,7 @@ def load_yolo_dataset(path_images:str, path_annot:str, SPLIT_RATIO:float) -> tup
 
     # Dataset final
     data = tf.data.Dataset.from_tensor_slices((image_paths, classes, bbox))
+    data = data.shuffle(buffer_size=len(txt_files), seed=42)
 
     # Dividir conjunto de validacion y de test
     num_val = int(len(txt_files) * SPLIT_RATIO)
