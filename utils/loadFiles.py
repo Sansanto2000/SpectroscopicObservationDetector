@@ -108,11 +108,14 @@ def txt_to_annotation(txt_file):
         if len(parts) == 0:
             continue
         # Separar valores
-        class_id = int(parts[0])
-        x_center = float(parts[1])
-        y_center = float(parts[2])
-        width = float(parts[3])
-        height = float(parts[4])
+        try:
+            class_id = int(float(parts[0]))
+            x_center = float(parts[1])
+            y_center = float(parts[2])
+            width = float(parts[3])
+            height = float(parts[4])
+        except Exception as e:
+            raise ValueError(f"Error en {txt_file} línea: {line}") from e
 
         boxes.append([x_center, y_center, width, height])
         class_ids.append(class_id)
