@@ -7,13 +7,19 @@ import tensorflow as tf
 import os
 from tqdm import tqdm
 
-def load_yolo_dataset(path_images:str, path_annot:str, SPLIT_RATIO:float) -> tuple[tf.RaggedTensor, tf.RaggedTensor]:
+def load_yolo_dataset(
+        path_images:str, 
+        path_annot:str, 
+        SPLIT_RATIO:float,
+        random_seed:int = None,
+    ) -> tuple[tf.RaggedTensor, tf.RaggedTensor]:
     """Cargar dataset de imagenes anotadas en base a archivos TXT de anotaciones y archivos JPG de imagenes.
 
     Args:
         path_images (str): path del directorio de imagenes JPG.
         path_annot (str): path del directorio de anotaciones TXT.
         SPLIT_RATIO (float): proporcion de datos para validacion.
+        random_seed (int): semilla random.
 
     Returns:
         tuple[tf.RaggedTensor, tf.RaggedTensor]: dataset de entrenamiento y dataset de validacion.
@@ -66,7 +72,9 @@ def load_yolo_dataset(path_images:str, path_annot:str, SPLIT_RATIO:float) -> tup
 
     # Dataset final
     data = tf.data.Dataset.from_tensor_slices((image_paths, classes, bbox))
-    data = data.shuffle(buffer_size=len(txt_files), seed=42)
+    # Mezclar si corresponde
+    if(random_seed is not None):
+        data = data.shuffle(buffer_size=len(txt_files), seed=random_seed)
 
     # Dividir conjunto de validacion y de test
     num_val = int(len(txt_files) * SPLIT_RATIO)

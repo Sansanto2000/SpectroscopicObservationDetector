@@ -22,8 +22,9 @@ EPOCH = 100
 GLOBAL_CLIPNORM = 10.0
 SAVE_PATH = 'models/model.keras'
 # Ubicacion de las imagenes y anotaciones
-PATH_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large/images"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
-PATH_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large/labels" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
+PATH_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large/images.2"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
+PATH_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large/labels.2" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
+RANDOM_SEED = 42
 
 # Etiquetas de clase
 class_ids = [
@@ -32,7 +33,7 @@ class_ids = [
 class_mapping = dict(zip(range(len(class_ids)), class_ids))
 
 # Cargar dataset
-train_data, val_data = load_yolo_dataset(PATH_IMAGES, PATH_ANNOT, SPLIT_RATIO)
+train_data, val_data = load_yolo_dataset(PATH_IMAGES, PATH_ANNOT, SPLIT_RATIO, RANDOM_SEED)
 
 ### REGLAS DE LOS DATOS ###
 """
