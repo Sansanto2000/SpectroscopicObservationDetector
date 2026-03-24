@@ -1,30 +1,28 @@
+'''
+Codigo para el entrenamiento de modelos de deteccion de observaciones.
+Deteccion basada en formato YOLO con kerasCV.
+'''
 import os
-
 from utils.prepare import prepare_ds
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes de advertencia
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"    # Ocultar mensajes de advertencia
 from utils.loadFiles import load_yolo_dataset
-
 import tensorflow as tf
 from keras.optimizers import Adam
 from keras.callbacks import TensorBoard
 from callbacks.EvaluateCOCOMetricsCallback import EvaluateCOCOMetricsCallback
 from utils.visualize import visualize_dataset, visualize_detections
-
 import keras_cv
-
 tf.config.optimizer.set_jit(False)
 tf.keras.backend.clear_session()
+from dotenv import load_dotenv
 
-SPLIT_RATIO = 0.2
-BATCH_SIZE = 4
-LEARNING_RATE = 0.001
-EPOCH = 100
-GLOBAL_CLIPNORM = 10.0
-SAVE_PATH = 'models/model.keras'
+load_dotenv()
 # Ubicacion de las imagenes y anotaciones
-PATH_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large/images.2"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
-PATH_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large/labels.2" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
-RANDOM_SEED = 42
+PATH_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large.3/images"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
+PATH_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large.3/labels" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
+ROTATE_ANGLE = 0
+SPLIT_RATIO = 0.2
+EPOCH = 20
 
 # Etiquetas de clase
 class_ids = [
@@ -33,7 +31,11 @@ class_ids = [
 class_mapping = dict(zip(range(len(class_ids)), class_ids))
 
 # Cargar dataset
-train_data, val_data = load_yolo_dataset(PATH_IMAGES, PATH_ANNOT, SPLIT_RATIO, RANDOM_SEED)
+train_data, val_data = load_yolo_dataset(
+    PATH_IMAGES, 
+    PATH_ANNOT, 
+    SPLIT_RATIO, 
+    int(os.getenv("RANDOM_SEED")))
 
 ### REGLAS DE LOS DATOS ###
 """
@@ -41,20 +43,22 @@ IMAGENES: (640, 640)
 LABELS: rel_xywh
 """
 # Preparar datos de entrenamiento
-train_ds = prepare_ds(train_data, (640,640), BATCH_SIZE)
+train_ds = prepare_ds(train_data, (640,640), int(os.getenv("BATCH_SIZE")), rotate_angle=ROTATE_ANGLE)
 # Preparar datos de validacion
-val_ds = prepare_ds(val_data, (640,640), BATCH_SIZE)
+val_ds = prepare_ds(val_data, (640,640), int(os.getenv("BATCH_SIZE")), rotate_angle=ROTATE_ANGLE)
 
 # Visualizar
 visualize_dataset(
     train_ds, bounding_box_format="rel_xywh", value_range=(0, 255), 
-    rows=2, cols=2, class_mapping=class_mapping, save_path="train/train_visualization.png"
+    rows=2, cols=2, class_mapping=class_mapping, 
+    save_path=os.path.join(os.getenv("PLOT_PATH"), "train_visualization.png")
 )
 
 # Visualizar
 visualize_dataset(
     val_ds, bounding_box_format="rel_xywh", value_range=(0, 255), 
-    rows=2, cols=2, class_mapping=class_mapping, save_path="train/val_visualization.png"
+    rows=2, cols=2, class_mapping=class_mapping, 
+    save_path=os.path.join(os.getenv("PLOT_PATH"), "val_visualization.png")
 )
 
 ### Tuplas para el entrenamiento ###
@@ -88,8 +92,8 @@ yolo = keras_cv.models.YOLOV8Detector(
 )
 # Optimizador 
 optimizer = Adam(
-    learning_rate=LEARNING_RATE,
-    global_clipnorm=GLOBAL_CLIPNORM
+    learning_rate=float(os.getenv("LEARNING_RATE")),
+    global_clipnorm=float(os.getenv("GLOBAL_CLIPNORM"))
 )
 # Compilar
 yolo.compile(
@@ -100,7 +104,7 @@ yolo.compile(
 )
 
 callbacks = [
-    EvaluateCOCOMetricsCallback(val_ds, SAVE_PATH),
+    EvaluateCOCOMetricsCallback(val_ds, os.getenv("SAVE_PATH")),
     TensorBoard(
         log_dir='tensorboard/logdir', 
         histogram_freq=1,   # Frecuencia (en epocas) para generar histogramas
@@ -124,7 +128,7 @@ visualize_detections(
     dataset=train_ds, 
     bounding_box_format="rel_xywh",
     rows=2, cols=2, class_mapping=class_mapping, 
-    save_path="train/train_predictions.png",
+    save_path=os.path.join(os.getenv("PLOT_PATH"), "train_predictions.png"),
     confidence_threshold=0.5
 )
 # Validacion
@@ -133,6 +137,6 @@ visualize_detections(
     dataset=val_ds, 
     bounding_box_format="rel_xywh",
     rows=2, cols=2, class_mapping=class_mapping, 
-    save_path="train/val_predictions.png",
+    save_path=os.path.join(os.getenv("PLOT_PATH"), "val_predictions.png"),
     confidence_threshold=0.5
 )

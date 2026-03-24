@@ -7,10 +7,14 @@ from utils.prepare import prepare_ds
 import tensorflow as tf
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes de advertencia
 
-MODEL_PATH = '/home/sponte/Repositorios/SpectroscopicObservationDetector/models/model.keras'
-TEST_IMAGES = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/images.jpg"
-TEST_ANNOT = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/labels"
-BATCH_SIZE = 4
+MODEL_PATH = '/home/sponte/Repositorios/SpectroscopicObservationDetector/models/model-v0.0.6.keras'
+TEST_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large.3/images"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
+TEST_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large.3/labels"
+# TEST_IMAGES = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/images.jpg"
+# TEST_ANNOT = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/labels"
+BATCH_SIZE = 16
+SPLIT_RATIO = 0.2
+RANDOM_SEED = 42
 
 # Etiquetas de clase
 class_ids = [
@@ -19,8 +23,8 @@ class_ids = [
 class_mapping = dict(zip(range(len(class_ids)), class_ids))
 
 # Datos
-test_data, _ = load_yolo_dataset(TEST_IMAGES, TEST_ANNOT, 0)
-# Preparar datos de entrenamiento
+train_data, test_data = load_yolo_dataset(TEST_IMAGES, TEST_ANNOT, SPLIT_RATIO, RANDOM_SEED)
+# Preparar datos de test
 test_ds = prepare_ds(test_data, (640,640), BATCH_SIZE, rotate_angle=90)
 
 # Visualizar datos

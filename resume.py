@@ -14,10 +14,11 @@ PATH_IMAGES = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/images.jpg" 
 PATH_ANNOT = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/labels" #"/Users/s.a.p.a/Documents/Datasets/conGSSSP/labels/" # "D:\\Datasets\\conGSSSP_v2\\labels\\" 
 BATCH_SIZE = 16
 SPLIT_RATIO = 0.2
-EPOCH = 10
+EPOCH = 20
 SAVE_PATH = '/home/sponte/Repositorios/SpectroscopicObservationDetector/models/model.keras'
 LEARNING_RATE = 0.001
 GLOBAL_CLIPNORM = 10.0
+RANDOM_SEED = 42
 
 # Etiquetas de clase
 class_ids = [
@@ -44,7 +45,7 @@ model.compile(
 )
 
 # Cargar dataset
-train_data, val_data = load_yolo_dataset(PATH_IMAGES, PATH_ANNOT, SPLIT_RATIO)
+train_data, val_data = load_yolo_dataset(PATH_IMAGES, PATH_ANNOT, SPLIT_RATIO, RANDOM_SEED)
 
 # Preparar datos de entrenamiento
 train_ds = prepare_ds(train_data, (640,640), BATCH_SIZE, rotate_angle=90)
