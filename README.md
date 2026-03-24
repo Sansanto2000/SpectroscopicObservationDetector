@@ -12,21 +12,21 @@ Se recomienda usar uv para la administracion del entorno virtual.
 
 Con el siguiente comando se puede iniciar el entrenamiento del modelo.
 ```
-uv run main.py
+uv run src/main.py
 # o
-nohup uv run main.py > output.log 2>&1 &
+nohup uv run src/main.py > output.log 2>&1 &
 ```
 
 Con el siguiente comando se puede reanudar el entrenamiento de un modelo que ya estubiese entrenando.
 ```
-uv run resume.py
+uv run src/resume.py
 ```
 
 # Evaluacion
 
 Con el siguiete comando se puede evaluar las metricas *IoU* y *Map* del modelo entrenado.
 ```
-uv run evaluate.py
+uv run src/evaluate.py
 ```
 
 ## Tensorboard
