@@ -12,12 +12,12 @@ os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"    # Ocultar mensajes de advertencia
 from dotenv import load_dotenv
 
 load_dotenv()
-MODEL_PATH = '/home/sponte/Repositorios/SpectroscopicObservationDetector/models/model-v0.0.8.r.keras'
-TEST_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large.3/images"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
-TEST_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large.3/labels"
-# TEST_IMAGES = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/images.jpg"
-# TEST_ANNOT = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/labels"
-ROTATE_ANGLE = 0
+MODEL_PATH = '/home/sponte/Repositorios/SpectroscopicObservationDetector/models/model-v0.0.7.m.keras'
+# TEST_IMAGES = "/mnt/data3/sponte/datasets/conGSSSP.large.3/images"#"/Users/s.a.p.a/Documents/Datasets/conGSSSP/images/" # "D:\\Datasets\\conGSSSP_v2\\images\\" 
+# TEST_ANNOT = "/mnt/data3/sponte/datasets/conGSSSP.large.3/labels"
+TEST_IMAGES = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/images.jpg"
+TEST_ANNOT = "/mnt/data3/sponte/datasets/observaciones-etiquetadas/labels"
+ROTATE_ANGLE = 90
 SPLIT_RATIO = 0.2
 
 # Etiquetas de clase
@@ -41,8 +41,8 @@ visualize_dataset(
     test_ds, 
     bounding_box_format="rel_xywh", 
     value_range=(0, 255), 
-    rows=4, 
-    cols=4, 
+    rows=2, 
+    cols=3, 
     class_mapping=class_mapping, 
     save_path=os.path.join(os.getenv("PLOT_PATH"), "test_visualization.png"),
 )
@@ -92,7 +92,7 @@ visualize_detections(
     model=model, 
     dataset=test_ds, 
     bounding_box_format="rel_xywh",
-    rows=4, cols=4, class_mapping=class_mapping, 
+    rows=2, cols=3, class_mapping=class_mapping, 
     save_path=os.path.join(os.getenv("PLOT_PATH"), "test_predictions.png"),
     confidence_threshold=0.5
 )
